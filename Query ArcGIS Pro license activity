@@ -1,0 +1,19 @@
+from arcgis.gis import GIS
+import pandas as pd
+from datetime import timedelta
+
+# Connect to your ArcGIS Online organization
+gis = GIS("home")
+
+# Query list of all users licensed for ArcGIS Pro
+pro_license = gis.admin.license.get('ArcGIS Pro')
+users_list = pd.DataFrame(pro_license.all())
+
+# Filter out users with no login (-1 indicates no login)
+users_list = users_list.loc[users_list['lastLogin'] != -1]
+
+# Convert Unix timestamp to datetime, account for hours difference, format to yyyy-mm-dd
+users_list['lastLogin'] = (pd.to_datetime(users_list['lastLogin'], unit='ms') - timedelta(hours=8)).dt.strftime('%Y-%m-%d')
+
+# Display the DataFrame
+print(users_list[['username', 'lastLogin']])
